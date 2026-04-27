@@ -50,11 +50,14 @@ class SettingsIn(BaseModel):
 # ---------- auth ----------
 @app.post("/api/auth/signup", response_model=TokenOut)
 def signup(data: SignupIn, db: Session = Depends(get_db)):
-    if db.query(User).filter_by(email=data.email).first():
-        raise HTTPException(400, "Email already registered")
-    u = User(email=data.email, name=data.name, password_hash=hash_password(data.password))
-    db.add(u); db.commit(); db.refresh(u)
-    return TokenOut(access_token=create_token(u.id), user=_user_dict(u))
+    try:
+        if db.query(User).filter_by(email=data.email).first():
+            raise HTTPException(400, "Email already registered")
+        u = User(email=data.email, name=data.name, password_hash=hash_password(data.password))
+        db.add(u); db.commit(); db.refresh(u)
+        return TokenOut(access_token=create_token(u.id), user=_user_dict(u))
+    except Exception as e:
+        import traceback; traceback.print_exc(); raise
 
 
 @app.post("/api/auth/login", response_model=TokenOut)
