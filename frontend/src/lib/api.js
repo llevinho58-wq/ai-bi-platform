@@ -1,4 +1,5 @@
 const TOKEN_KEY = "biziq_token";
+const API_BASE = (import.meta.env.VITE_API_BASE || "https://biziq-backend-kf2g.onrender.com").replace(/\/$/, "");
 
 export const auth = {
   get token() { return localStorage.getItem(TOKEN_KEY); },
@@ -15,7 +16,8 @@ async function request(path, opts = {}) {
     opts.body = JSON.stringify(opts.json);
     delete opts.json;
   }
-  const res = await fetch(path, { ...opts, headers });
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const res = await fetch(url, { ...opts, headers });
   if (!res.ok) {
     let msg = `${res.status}`;
     try { const j = await res.json(); msg = j.detail || msg; } catch {}
@@ -29,7 +31,7 @@ export const api = {
   signup: (data) => request("/api/auth/signup", { method: "POST", json: data }),
   login: async (email, password) => {
     const body = new URLSearchParams({ username: email, password });
-    const res = await fetch("/api/auth/login", { method: "POST", body });
+    const res = await fetch(`${API_BASE}/api/auth/login`, { method: "POST", body });
     if (!res.ok) throw new Error("Invalid email or password");
     return res.json();
   },
@@ -48,5 +50,5 @@ export const api = {
   summary: () => request("/api/dashboard/summary"),
   insights: (id) => request(`/api/datasets/${id}/insights`, { method: "POST" }),
   ask: (id, question) => request(`/api/datasets/${id}/ask`, { method: "POST", json: { question } }),
-  reportUrl: (id) => `/api/datasets/${id}/report`,
+  reportUrl: (id) => `${API_BASE}/api/datasets/${id}/report`,
 };
