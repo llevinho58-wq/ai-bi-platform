@@ -16,10 +16,12 @@ oauth2 = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 def hash_password(p: str) -> str:
+    p = p.encode("utf-8")[:72].decode("utf-8", errors="ignore")
     return pwd.hash(p)
 
 
 def verify_password(p: str, h: str) -> bool:
+    p = p.encode("utf-8")[:72].decode("utf-8", errors="ignore")
     return pwd.verify(p, h)
 
 
